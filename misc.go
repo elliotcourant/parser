@@ -455,6 +455,7 @@ var tokenMap = map[string]int{
 	"RESTRICT":                 restrict,
 	"REVERSE":                  reverse,
 	"REVOKE":                   revoke,
+	"RETURNING":                returning,
 	"RIGHT":                    right,
 	"RLIKE":                    rlike,
 	"ROLE":                     role,

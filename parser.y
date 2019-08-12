@@ -217,6 +217,7 @@ import (
 	require			"REQUIRE"
 	restrict		"RESTRICT"
 	revoke			"REVOKE"
+	returning		"RETURNING"
 	right			"RIGHT"
 	rlike			"RLIKE"
 	row			"ROW"
@@ -863,6 +864,7 @@ import (
 	ReferOpt			"reference option"
 	RequireList			"require list"
 	RequireListElement		"require list element"
+	ReturningList 			"returning list"
 	Rolename            "Rolename"
 	RolenameList            "RolenameList"
 	RoleSpec		"Rolename and auth option"
@@ -3825,7 +3827,7 @@ NotKeywordToken:
  *  TODO: support PARTITION
  **********************************************************************************/
 InsertIntoStmt:
-	"INSERT" PriorityOpt IgnoreOptional IntoOpt TableName InsertValues OnDuplicateKeyUpdate
+	"INSERT" PriorityOpt IgnoreOptional IntoOpt TableName InsertValues ReturningList OnDuplicateKeyUpdate
 	{
 		x := $6.(*ast.InsertStmt)
 		x.Priority = $2.(mysql.PriorityEnum)
@@ -3834,7 +3836,10 @@ InsertIntoStmt:
 		ts := &ast.TableSource{Source: $5.(*ast.TableName)}
 		x.Table = &ast.TableRefsClause{TableRefs: &ast.Join{Left: ts}}
 		if $7 != nil {
-			x.OnDuplicate = $7.([]*ast.Assignment)
+			x.Returning = $7.(*ast.FieldList)
+		}
+		if $8 != nil {
+			x.OnDuplicate = $8.([]*ast.Assignment)
 		}
 		$$ = x
 	}
@@ -3842,6 +3847,15 @@ InsertIntoStmt:
 IntoOpt:
 	{}
 |	"INTO"
+
+ReturningList:
+	{
+		$$ = nil
+	}
+|	"RETURNING" SelectStmtFieldList
+	{
+		$$ = $2.(*ast.FieldList)
+	}
 
 InsertValues:
 	'(' ColumnNameListOpt ')' ValueSym ValuesList

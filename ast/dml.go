@@ -1317,6 +1317,7 @@ type InsertStmt struct {
 	Priority    mysql.PriorityEnum
 	OnDuplicate []*Assignment
 	Select      ResultSetNode
+	Returning   *FieldList
 }
 
 // Restore implements Node interface.
@@ -1388,6 +1389,17 @@ func (n *InsertStmt) Restore(ctx *RestoreCtx) error {
 			}
 			if err := v.Restore(ctx); err != nil {
 				return errors.Annotatef(err, "An error occurred while restore InsertStmt.Setlist[%d]", i)
+			}
+		}
+	}
+	if n.Returning != nil {
+		ctx.WriteKeyWord(" RETURNING ")
+		for i, field := range n.Returning.Fields {
+			if i != 0 {
+				ctx.WritePlain(",")
+			}
+			if err := field.Restore(ctx); err != nil {
+				return errors.Annotatef(err, "An error occurred while restore InsertStmt.Returning[%d]", i)
 			}
 		}
 	}
